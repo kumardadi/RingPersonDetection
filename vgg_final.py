@@ -93,7 +93,7 @@ score_list = [(labels[x], float(cosine(model_scores[x], test_model_score))) for 
 
 sorted_score = sorted(score_list, key=lambda x: x[1], reverse=False)
 
-if sorted_score[0][1] < 0.2:
+if sorted_score[0][1] < 0.4:
     print("Matched with " + sorted_score[0][0] + "\nScore: " + str(sorted_score[0][1]))
 else:
     print("Match not found\nScore: " + str(sorted_score[0][1]))
