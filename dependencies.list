@@ -1,0 +1,11 @@
+numpy
+scipy
+tensorflow
+tensorrt
+tensorflow-cpu
+pillow
+keras
+keras_vggface
+matplotlib
+pytorch
+
