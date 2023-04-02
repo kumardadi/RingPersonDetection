@@ -57,6 +57,8 @@ if update_model:
                         face_image = expand_dims(face_array, axis=0)
                         faces.append(face_image)
                         labels.append(os.path.dirname(os.path.join(root, filename)).split('/')[-1])
+                    if (len(temp) > 1):
+                        print(filename)
 
     model_scores = get_model_scores(faces)
     # Saving the face map for future reference
