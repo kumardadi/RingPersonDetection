@@ -3,14 +3,13 @@ import os
 import matplotlib.image as mpimg
 from mtcnn.mtcnn import MTCNN
 import torch
-import contextlib
-import io
 from numpy import asarray
 from numpy import expand_dims
 from PIL import Image
 from keras_vggface.utils import preprocess_input
 from keras_vggface.vggface import VGGFace
 from scipy.spatial.distance import cosine
+import time
 
 TrainingImagePath='lfw'
 TestImagePath='lfw-test/'
@@ -55,6 +54,7 @@ match_not_found_counter = 0
 for root, dirs, files in os.walk(TestImagePath):
     for filename in files:
         if filename.endswith(".jpg") or filename.endswith(".png"):
+            start_time = time.time()
             test_image = mpimg.imread(os.path.join(root, filename))
             test_face = detector.detect_faces(test_image)[0]
             x1, y1, width, height = test_face['box']
@@ -69,6 +69,8 @@ for root, dirs, files in os.walk(TestImagePath):
             score_list = [(labels[x], float(cosine(model_scores[x], test_model_score))) for x in range(len(labels))]
             sorted_score = sorted(score_list, key=lambda x: x[1], reverse=False)
             total_counter += 1
+            end_time = time.time()
+            print("Time taken:", end_time - start_time, "seconds")
             if sorted_score[0][1] < COSINE_LIMITER:
                 print("Matched with " + sorted_score[0][0] + ", Score: " + str(sorted_score[0][1]))
                 if sorted_score[0][0] in filename:
