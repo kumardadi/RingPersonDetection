@@ -13,7 +13,8 @@ from keras_vggface.vggface import VGGFace
 from scipy.spatial.distance import cosine
 
 TrainingImagePath='lfw'
-update_model = True
+TestImagePath='lfw-test/'
+update_model = False
 
 images = []
 faces = []
@@ -57,8 +58,6 @@ if update_model:
                         face_image = expand_dims(face_array, axis=0)
                         faces.append(face_image)
                         labels.append(os.path.dirname(os.path.join(root, filename)).split('/')[-1])
-                    if (len(temp) > 1):
-                        print(filename)
 
     model_scores = get_model_scores(faces)
     # Saving the face map for future reference
@@ -74,7 +73,7 @@ with open("ModelScores.pkl", "rb") as readStream:
 with open("Labels.pkl", "rb") as readStream:
     labels = pickle.load(readStream)
 
-test_image = "lfw/Abdullah_Nasseef/Abdullah_Nasseef_0001.jpg"
+test_image = TestImagePath + "Abdullah_al-Attiyah_0001.jpg"
 
 test_image = mpimg.imread(test_image)
 
