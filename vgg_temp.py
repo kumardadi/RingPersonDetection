@@ -11,14 +11,9 @@ from PIL import Image
 from keras_vggface.utils import preprocess_input
 from keras_vggface.vggface import VGGFace
 from scipy.spatial.distance import cosine
-# Understand more about ImageDataGenerator at below link
-# https://blog.keras.io/building-powerful-image-classification-models-using-very-little-data.html
 
-# Defining pre-processing transformations on raw images of training data
-# These hyper parameters helps to generate slightly twisted versions
-# of the original image, which leads to a better model, since it learns
-# on the good and bad mix of images
 TrainingImagePath='lfw'
+update_model = True
 
 images = []
 faces = []
@@ -26,8 +21,6 @@ torch.cuda.set_device(0)
 detector = MTCNN()
 required_size=(224, 224)
 labels = []
-
-update_model = True
 
 # create a vggface model object
 model = VGGFace(model='resnet50',
@@ -58,15 +51,12 @@ if update_model:
                         x1, y1, width, height = face['box']
                         x2, y2 = x1 + width, y1 + height
                         face_boundary = image[y1:y2, x1:x2]
-                        # resize pixels to the model size
                         face_image = Image.fromarray(face_boundary)
                         face_image = face_image.resize(required_size)
                         face_array = asarray(face_image)
                         face_image = expand_dims(face_array, axis=0)
                         faces.append(face_image)
                         labels.append(os.path.dirname(os.path.join(root, filename)).split('/')[-1])
-                if len(temp) > 1:
-                    print(os.path.join(root, filename))
 
     model_scores = get_model_scores(faces)
     # Saving the face map for future reference
@@ -82,7 +72,7 @@ with open("ModelScores.pkl", "rb") as readStream:
 with open("Labels.pkl", "rb") as readStream:
     labels = pickle.load(readStream)
 
-test_image = "lfw/Abdul_Majeed_Shobokshi/Abdul_Majeed_Shobokshi_0001.jpg"
+test_image = "lfw/Abdullah_Nasseef/Abdullah_Nasseef_0001.jpg"
 
 test_image = mpimg.imread(test_image)
 
@@ -98,8 +88,11 @@ face_image = [expand_dims(face_array, axis=0)]
 
 test_model_score = get_model_scores(face_image)[0]
 
-score_list = [(labels[x], cosine(model_scores[x], test_model_score)) for x in range(len(labels))]
+score_list = [(labels[x], float(cosine(model_scores[x], test_model_score))) for x in range(len(labels))]
 
 sorted_score = sorted(score_list, key=lambda x: x[1], reverse=False)
 
-print(sorted_score[0][0])
+if sorted_score[0][1] < 0.2:
+    print("Matched with " + sorted_score[0][0] + "\nScore: " + str(sorted_score[0][1]))
+else:
+    print("Match not found\nScore: " + str(sorted_score[0][1]))
