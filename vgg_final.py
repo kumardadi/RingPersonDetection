@@ -32,11 +32,12 @@ model = VGGFace(model='resnet50',
 def get_model_scores(faces):
     scores = []
     for face in faces:
-        sample = asarray(face, 'float32')
-        # prepare the data for the model
-        sample = preprocess_input(sample, version=2)
-        # perform prediction
-        scores.append(model.predict(sample).flatten())
+        with contextlib.redirect_stdout(io.StringIO()):
+            sample = asarray(face, 'float32')
+            # prepare the data for the model
+            sample = preprocess_input(sample, version=2)
+            # perform prediction
+            scores.append(model.predict(sample).flatten())
     return scores
 
 if update_model:
@@ -48,16 +49,21 @@ if update_model:
                     image = mpimg.imread(os.path.join(root, filename))
                     images.append(image)
                     temp = detector.detect_faces(image)
+                    big_face = 0
+                    big_face_dimen = 0
                     for face in temp:
                         x1, y1, width, height = face['box']
                         x2, y2 = x1 + width, y1 + height
-                        face_boundary = image[y1:y2, x1:x2]
-                        face_image = Image.fromarray(face_boundary)
-                        face_image = face_image.resize(required_size)
-                        face_array = asarray(face_image)
-                        face_image = expand_dims(face_array, axis=0)
-                        faces.append(face_image)
-                        labels.append(os.path.dirname(os.path.join(root, filename)).split('/')[-1])
+                        if width * height > big_face_dimen:
+                            big_face_dimen = width * height
+                            big_face = image[y1:y2, x1:x2]
+                    face_boundary = big_face
+                    face_image = Image.fromarray(face_boundary)
+                    face_image = face_image.resize(required_size)
+                    face_array = asarray(face_image)
+                    face_image = expand_dims(face_array, axis=0)
+                    faces.append(face_image)
+                    labels.append(os.path.dirname(os.path.join(root, filename)).split('/')[-1])
 
     model_scores = get_model_scores(faces)
     # Saving the face map for future reference
